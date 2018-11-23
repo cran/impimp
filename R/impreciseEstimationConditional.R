@@ -89,8 +89,8 @@
 impestcond <- function(data, event, condition, constraints = NULL) {
 
   if(!is.impimp(data)) {
-    stop(sprintf(gettext("conditional imprecise estimation is only meaningful for objects of class %s",
-                         domain = "R-impimp"), dQuote("impimp")))
+    stop(gettextf("conditional imprecise estimation is only meaningful for objects of class %s",
+                  dQuote("impimp"), domain = "R-impimp"))
   }
   eventcheck(event)
   eventcheck(condition)
@@ -109,8 +109,8 @@ impestcond <- function(data, event, condition, constraints = NULL) {
 
   # if no tupel data is compatible with the condition raise error
   if(!any(compSubsetCond)) {
-    stop(sprintf(gettext("the lower probability of %s needs to be strictly larger than 0",
-                         domain = "R-impimp"), sQuote("condition")))
+    stop(gettextf("the lower probability of %s needs to be strictly larger than 0",
+                  sQuote("condition"), domain = "R-impimp"))
   }
 
   # compatible subset of the event

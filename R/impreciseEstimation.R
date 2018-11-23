@@ -87,8 +87,8 @@ impest <- function(data, event,  constraints = NULL) {
 
   # sanity checks
   if(!is.impimp(data)) {
-    stop(sprintf(gettext("imprecise estimation is only meaningful for objects of class %s",
-                         domain = "R-impimp"), dQuote("impimp")))
+    stop(gettextf("imprecise estimation is only meaningful for objects of class %s",
+                  dQuote("impimp"), domain = "R-impimp"))
   }
   eventcheck(event)
 

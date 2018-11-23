@@ -7,7 +7,7 @@
 \title{Imprecise Imputation for Statistical Matching}
 \usage{
 impimp(recipient, donor, method = c("variable_wise", "case_wise",
-  "domain"), vardomains = NULL)
+  "domain"), matchvars = NULL, vardomains = NULL)
 
 \method{print}{impimp}(x, ...)
 
@@ -22,6 +22,11 @@ is.impimp(z)
 The following values are possible, see details for an explanantion:
 \code{"variable_wise"} (default), \code{"case_wise"} and
 \code{"domain"}.}
+
+\item{matchvars}{a character vector containing the variable names
+to be used as matching variables. If \code{NULL} (default) all
+variables, present in both \code{donor} and \code{recipient} are
+used as matching variables.}
 
 \item{vardomains}{a named list containing the possible values of
 all variable in \code{donor} that are not present in
@@ -63,8 +68,9 @@ For \code{method = "domain"} a missing value of a variable in
 of that variable.
 
 The other methods are based on donation classes which are formed
-based on the intersection of variables of \code{recipient} and
-\code{donor}:
+based on the matching variables whose names are provided by
+\code{matchvars}. They need to be present in both \code{recipient}
+and \code{donor}:
 For \code{method = "variable_wise"} a missing value of a variable
 in \code{recipient} is imputed by the set of all observed values
 of that variable in \code{donor}.
@@ -78,9 +84,8 @@ This method does not require that all variables in \code{recipient}
 and \code{donor} are \code{\link[base]{factor}} variables, however,
 the imputation methods apply coercion to factor, so purely
 numerical variables will be treated as factors eventually.
-It does assume (and test for it), that there are no missing
-values present in the intersection of the variables of
-\code{recipient} and \code{donor}.
+It does assume (and test for it) that there are no missing
+values present in the matching variables.
 }
 \section{Reserved characters}{
 
@@ -110,7 +115,7 @@ Endres, E., Fink, P. and Augustin, T. (2018),
 Imprecise Imputation: A Nonparametric Micro Approach Reflecting
 the Natural Uncertainty of Statistical Matching with Categorical
 Data, \emph{Department of Statistics (LMU Munich): Technical Reports},
-No. 214
+No. 214. URL \url{https://epub.ub.uni-muenchen.de/42423/}.
 }
 \seealso{
 for the estimation of probabilities \code{\link{impest}}

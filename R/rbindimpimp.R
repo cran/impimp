@@ -57,9 +57,9 @@
 rbindimpimp <- function(x, y){
 
   if(!is.impimp(x) || !is.impimp(y)) {
-    stop(sprintf(gettext("%s and %s must be both of class %s",
-                         domain = "R-impimp"),
-                 sQuote("x"), sQuote("y"), dQuote("impimp")))
+    stop(gettextf("%s and %s must be both of class %s",
+                  sQuote("x"), sQuote("y"),
+                  dQuote("impimp"), domain = "R-impimp"))
   }
 
   # get the speical separator chars
@@ -76,9 +76,9 @@ rbindimpimp <- function(x, y){
 
   # if original variable names differ, raise error
   if(!setequal(unlist(namesSplitX), unlist(namesSplitY))) {
-    stop(sprintf(gettext("The underlying variable names of %s and %s must be the same",
-                         domain = "R-impimp"),
-                 sQuote("x"), sQuote("y")))
+    stop(gettextf("The underlying variable names of %s and %s must be the same",
+                  sQuote("x"), sQuote("y"),
+                  domain = "R-impimp"))
   }
 
   # calculate the variables names of the result as maximal set

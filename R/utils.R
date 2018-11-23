@@ -51,9 +51,9 @@
 checkImprecision <- function(data) {
 
   if(!is.impimp(data)) {
-    warning(sprintf(gettext("%s is not of class %s: the result may be inaccurate",
-                            domain = "R-impimp"),
-                    sQuote("data"), dQuote("impimp")))
+    warning(gettextf("%s is not of class %s: the result may be inaccurate",
+                     sQuote("data"), dQuote("impimp"),
+                     domain = "R-impimp"))
   }
   # returns TRUE if a variable includes imprecise observations
   sep <- getOption("impimp.obssep", "|")

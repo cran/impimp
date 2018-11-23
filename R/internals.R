@@ -91,17 +91,18 @@ collapse_obs <- function (z) {
 eventcheck <- function(events) {
 
   if(!is.list(events) || is.impimp_event(events)) {
-    stop(sprintf(gettext("%s must be a list of %s objects",
-                         domain = "R-impimp",
-                 sQuote(deparse(substitute(events))),
-                 dQuote("impimp_event"))))
+    stop(gettextf("%s must be a list of %s objects",
+                  sQuote(deparse(substitute(events))),
+                  dQuote("impimp_event"),
+                  domain = "R-impimp"))
   }
 
   if(any(vapply(events, function(x) {!is.impimp_event(x)},
                 FUN.VALUE = logical(1L)))) {
-    stop(sprintf(gettext("only objects of class %s are permitted in %s",
-                         domain = "R-impimp"), dQuote("impimp_event"),
-                 sQuote(deparse(substitute(events)))))
+    stop(gettextf("only objects of class %s are permitted in %s",
+                  dQuote("impimp_event"),
+                  sQuote(deparse(substitute(events))),
+                  domain = "R-impimp"))
   }
   invisible(events)
 }

@@ -25,6 +25,10 @@
 #' The following values are possible, see details for an explanantion:
 #' \code{"variable_wise"} (default), \code{"case_wise"} and
 #' \code{"domain"}.
+#' @param matchvars a character vector containing the variable names
+#' to be used as matching variables. If \code{NULL} (default) all
+#' variables, present in both \code{donor} and \code{recipient} are
+#' used as matching variables.
 #' @param vardomains a named list containing the possible values of
 #' all variable in \code{donor} that are not present in
 #' \code{recipient}.\cr
@@ -47,8 +51,9 @@
 #' of that variable.
 #'
 #' The other methods are based on donation classes which are formed
-#' based on the intersection of variables of \code{recipient} and
-#' \code{donor}:
+#' based on the matching variables whose names are provided by
+#' \code{matchvars}. They need to be present in both \code{recipient}
+#' and \code{donor}:
 #' For \code{method = "variable_wise"} a missing value of a variable
 #' in \code{recipient} is imputed by the set of all observed values
 #' of that variable in \code{donor}.
@@ -72,9 +77,8 @@
 #' and \code{donor} are \code{\link[base]{factor}} variables, however,
 #' the imputation methods apply coercion to factor, so purely
 #' numerical variables will be treated as factors eventually.
-#' It does assume (and test for it), that there are no missing
-#' values present in the intersection of the variables of
-#' \code{recipient} and \code{donor}.
+#' It does assume (and test for it) that there are no missing
+#' values present in the matching variables.
 #'
 #' @return
 #' The data.frame resulting in an imprecise imputation
@@ -94,7 +98,7 @@
 #' Imprecise Imputation: A Nonparametric Micro Approach Reflecting
 #' the Natural Uncertainty of Statistical Matching with Categorical
 #' Data, \emph{Department of Statistics (LMU Munich): Technical Reports},
-#' No. 214
+#' No. 214. URL \url{https://epub.ub.uni-muenchen.de/42423/}.
 #'
 #' @examples
 #' A <- data.frame(x1 = c(1,0), x2 = c(0,0),
@@ -111,15 +115,15 @@
 impimp <- function(recipient, donor, method = c("variable_wise",
                                     "case_wise",
                                     "domain"),
-                   vardomains = NULL) {
+                   matchvars = NULL, vardomains = NULL) {
 
   # Check the environment
   varsep <- getOption("impimp.varsep", ",")
   obssep <- getOption("impimp.obssep",  "|")
   if(varsep == obssep) {
-    stop(sprintf(gettext("option values %s and %s need to be different characters",
-                         domain = "R-impimp"),
-                 sQuote("impimp.varsep"), sQuote("impimp.obssep")))
+    stop(gettextf("option values %s and %s need to be different characters",
+                  sQuote("impimp.varsep"), sQuote("impimp.obssep"),
+                  domain = "R-impimp"))
   }
 
   # function argument matching
@@ -130,23 +134,40 @@ impimp <- function(recipient, donor, method = c("variable_wise",
 
   # Test if there is an non-empty intersection in the names
   if(!length(cnames)) {
-    stop(sprintf(gettext("%s and %s do not contain any variables present in both",
-                         domain = "R-impimp"),
-                 sQuote("recipient"), sQuote("donor")))
+    stop(gettextf("%s and %s do not contain any variables present in both",
+                  sQuote("recipient"), sQuote("donor"),
+                  domain = "R-impimp"))
   }
-  # Test if the intersecting variables do not contain NA
-  lapply(cnames, function(x) {
+
+  if(is.null(matchvars)) {
+    matchvars <- cnames
+  } else if(is.character(matchvars)){
+    if(any(nm <- (match(matchvars, cnames, nomatch = 0L) == 0L))) {
+      stop(gettextf("%s contains variable(s) which are not present in both %s and %s: %s",
+                    sQuote("matchvars"), sQuote("donor"),
+                    sQuote("recipient"),
+                    paste(sapply(matchvars[nm], dQuote), collapse = ", "),
+                    domain = "R-impimp"))
+    }
+  } else {
+    stop(gettextf("%s must be NULL or a character vector",
+                  sQuote("matchvars"),
+                  domain = "R-impimp"))
+  }
+  # Test if the matching variables do not contain NA
+  lapply(matchvars, function(x) {
     if(anyNA(recipient[ ,x])) {
-      stop(sprintf(gettext("missing values in variable %s in %s",
-                           domain = "R-impimp"),
-                   sQuote(x), sQuote("recipient")))
+      stop(gettextf("missing values in variable %s in %s",
+                    sQuote(x), sQuote("recipient"),
+                    domain = "R-impimp"))
     }
     if(anyNA(donor[ ,x])) {
-      stop(sprintf(gettext("missing values in variable %s in %s",
-                           domain = "R-impimp"),
-                   sQuote(x), sQuote("donor")))
+      stop(gettextf("missing values in variable %s in %s",
+                    sQuote(x), sQuote("donor"),
+                    domain = "R-impimp"))
     }
   })
+
 
   rnames <- setdiff(names(recipient), names(donor))
   dnames <- setdiff(names(donor), names(recipient))
@@ -155,18 +176,20 @@ impimp <- function(recipient, donor, method = c("variable_wise",
 
   # check for special package-reserved characters in variable names
   if(length(grep(varsep, allnames, fixed = TRUE))) {
-    stop(sprintf(gettext("some variable names contain the character %s, reserved for internal purpose.",
-                       "\nRename the variable(s) or change the internal character by setting the option %s",
-                       domain = "R-impimp"),
-                 c(sQuote(varsep), sQuote("impimp.varsep"))))
+    stop(gettextf(c("some variable names contain the character %s, reserved for internal purpose.",
+                    "\nRename the variable(s) or change the internal character by setting the option %s"),
+                  c(sQuote(varsep), sQuote("impimp.varsep")),
+                  domain = "R-impimp"))
   }
 
 
   # Do nothing if there are no variables in donor that aren't in recipient
   if(!length(dnames)) {
-    warning(sprintf(gettext("no variable present only in %s and not in %s; ",
-            "returning %s unmodified", domain = "R-impimp"),
-            c(sQuote("donor"), sQuote("recipient")), sQuote("recipient")))
+    warning(gettextf(c("no variable present only in %s and not in %s; ",
+                       "returning %s unmodified"),
+                     c(sQuote("donor"), sQuote("recipient")),
+                     sQuote("recipient"),
+                     domain = "R-impimp"))
     return(recipient)
   }
 
@@ -200,18 +223,16 @@ impimp <- function(recipient, donor, method = c("variable_wise",
   # check for special package-reserved characters in variable values
   lapply(names(lvls), function(x) {
     if(length(grep(varsep, lvls[[x]], fixed = TRUE))) {
-      stop(sprintf(gettext("variable %s contains the character %s, reserved for internal purpose.",
-                           "\nChange the internal character by setting the option %s",
-                           domain = "R-impimp"),
-                   c(sQuote(x), sQuote(varsep),
-                     sQuote("impimp.varsep"))))
+      stop(gettextf(c("variable %s contains the character %s, reserved for internal purpose.",
+                      "\nChange the internal character by setting the option %s"),
+                    c(sQuote(x), sQuote("impimp.varsep")),
+                    sQuote(varsep),  domain = "R-impimp"))
     }
     if(length(grep(obssep, lvls[[x]], fixed = TRUE))) {
-      stop(sprintf(gettext("variable %s contains the character %s, reserved for internal purpose.",
-                           "\nChange the internal character by setting the option %s",
-                           domain = "R-impimp"),
-                   c(sQuote(x), sQuote(obssep),
-                     sQuote("impimp.obssep"))))
+      stop(gettextf(c("variable %s contains the character %s, reserved for internal purpose.",
+                      "\nChange the internal character by setting the option %s"),
+                    c(sQuote(x), sQuote("impimp.obssep")),
+                    sQuote(obssep), domain = "R-impimp"))
     }
   })
 
@@ -232,9 +253,9 @@ impimp <- function(recipient, donor, method = c("variable_wise",
 
     # create new variable to index the x structure
     # This is for donation classes
-    recipient$cfactor <- factor(apply(recipient[, cnames], MARGIN = 1,
+    recipient$cfactor <- factor(apply(recipient[, matchvars], MARGIN = 1,
                               FUN = paste, collapse =","))
-    donor$cfactor <- factor(apply(donor[, cnames], MARGIN = 1,
+    donor$cfactor <- factor(apply(donor[, matchvars], MARGIN = 1,
                               FUN = paste, collapse =","))
 
     ## transform into tuple notation for method == case_wise
@@ -264,8 +285,9 @@ impimp <- function(recipient, donor, method = c("variable_wise",
         # of levels of the variables
         ##### Shall we leave this a warning or a message instead?
         ##### We can also opt for a 'verbose' option
-        warning(sprintf(gettext("No donor found for donation class: %s",
-                                domain = "R-impimp"), sQuote(clvl)))
+        warning(gettextf("No donor found for donation class: %s",
+                         sQuote(clvl),
+                         domain = "R-impimp"))
         donor_dlvls <- dlvls
       } else {
         # extract observed donor values
@@ -296,9 +318,9 @@ impimp <- function(recipient, donor, method = c("variable_wise",
 #' \code{\link[base]{print.data.frame}}
 #' @export
 print.impimp <- function(x, ...) {
-  cat(sprintf(gettext("result of imprecise imputation with method %s\n",
-                       domain ="R-impimp"),
-              sQuote(attr(x, "impmethod"))))
+  cat(gettextf("result of imprecise imputation with method %s\n",
+                sQuote(attr(x, "impmethod")),
+                domain ="R-impimp"))
   NextMethod(x, ...)
 }
 

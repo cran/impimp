@@ -69,23 +69,23 @@
 generateTupelData <- function(data, constraints = NULL) {
 
   if(!is.impimp(data)) {
-    warning(sprintf(gettext("%s is not of class %s: the result may be inaccurate",
-                            domain = "R-impimp"),
-                    sQuote("data"), dQuote("impimp")))
+    warning(gettextf("%s is not of class %s: the result may be inaccurate",
+                     sQuote("data"), dQuote("impimp"),
+                     domain = "R-impimp"))
   }
   hasConstraints <- !is.null(constraints)
   if (hasConstraints) {
     if(!is.list(constraints) || is.impimp_event(constraints) ) {
-      stop(sprintf(gettext("if specified, %s must be a list of objects of class %s",
-                           domain = "R-impimp"),
-                   sQuote("constraints"), dQuote("impimp_event")))
+      stop(gettextf("if specified, %s must be a list of objects of class %s",
+                    sQuote("constraints"), dQuote("impimp_event"),
+                    domain = "R-impimp"))
     }
     if(any(vapply(constraints,
                   FUN = function(x) {!is.impimp_event(x)},
                   FUN.VALUE = logical(1L), USE.NAMES = FALSE))) {
-      stop(sprintf(gettext("the elements of %s must all be of class %s",
-                           domain = "R-impimp"), sQuote("constraints"),
-                   dQuote("impimp_event")))
+      stop(gettextf("the elements of %s must all be of class %s",
+                    sQuote("constraints"), dQuote("impimp_event"),
+                    domain = "R-impimp"))
     }
     constraints <- unlist(constraints, recursive = FALSE)
   }
