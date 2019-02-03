@@ -84,7 +84,9 @@
 #' The data.frame resulting in an imprecise imputation
 #' of \code{donor} into \code{recipient}.
 #' It is also of class \code{"impimp"} and stores the imputation
-#' method in its attribute \code{"impmethod"}, as well as the
+#' method in its attribute \code{"impmethod"}, the names of the
+#' variables of the resulting object containing imputed values
+#' in the attribute \code{"imputedvarnames"}, as well as the
 #' list of (guessed) levels of each underlying variable in
 #' \code{"varlevels"}.
 #'
@@ -125,6 +127,11 @@ impimp <- function(recipient, donor, method = c("variable_wise",
                   sQuote("impimp.varsep"), sQuote("impimp.obssep"),
                   domain = "R-impimp"))
   }
+
+  # temporarily set stringsAsFactors to FALSE
+  # and reset it to old value after exiting
+  oldsAF <- options(stringsAsFactors = FALSE)
+  on.exit(options(oldsAF))
 
   # function argument matching
   method <- match.arg(method)
@@ -209,8 +216,8 @@ impimp <- function(recipient, donor, method = c("variable_wise",
                    varlevels <- lvls[[varname]]
                    # if variable is not present in one df,
                    # then NULL is returned for that df
-                   gvarlevels <- gather_levels(c(recipient[[varname]],
-                                                 donor[[varname]]))
+                   gvarlevels <- gather_levels(c(as.character(recipient[[varname]]),
+                                                 as.character(donor[[varname]])))
                    if(is.null(varlevels)) {
                      varlevels <- gvarlevels
                    } else if(length(lvldiff <- setdiff(gvarlevels,
@@ -309,6 +316,7 @@ impimp <- function(recipient, donor, method = c("variable_wise",
   attr(impRecipient, "impmethod") <-
     c(method, attr(impRecipient, "impmethod"))
   attr(impRecipient, "varlevels") <- lvls
+  attr(impRecipient, "imputedvarnames") <- dnames
   impRecipient
 }
 

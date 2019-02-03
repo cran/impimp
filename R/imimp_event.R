@@ -24,6 +24,10 @@
 #' For each component the varname should be a variable name from the
 #' underlying data.frame and value a vector of possible outcomes;
 #' may also be of length one.
+#' @param isEventList logical; if \code{TRUE} and \code{...}
+#' contains only a list object, this list is treated as if it was
+#' an event specification, see \code{...}. Since this argument
+#' follows \code{...} its name cannot be abbreviated.
 #'
 #' @return A object of class \code{"impimp_event"} as a list of lists,
 #' where each sublist contains one point in the cartesian product,
@@ -41,18 +45,26 @@
 #' @examples
 #' ## underlying data set: x1: 1:6, x2: 1:10
 #'
-#' ## subspace, requiring: x1 == 1 & ((z2 == 1 ) | (z2 == 2))
-#' impimp_event(x1 = 1, z2 = c(1,2))
+#' ## subspace, requiring: x1 == 1 & ((x2 == 1 ) | (x2 == 2))
+#' impimp_event(x1 = 1, x2 = c(1,2))
 #'
 #' ## subsapce containing all points whitin the Cartesian
-#' ## product of (x1 =) {1,2,3,6} x {5,8} (= z2)
-#' impimp_event(x1 = c(1:3,6), z2 = c(5,8))
+#' ## product of (x1 =) {1,2,3,6} x {5,8} (= x2)
+#' # via  ... argument
+#' impimp_event(x1 = c(1:3,6), x2 = c(5,8))
+#' # via EVENTLIST
+#' impimp_event(list(x1 = c(1:3,6), x2 = c(5,8)),
+#'              isEventList = TRUE)
 #'
 #' @importFrom stats setNames
 #' @export
-impimp_event <- function(...) {
+impimp_event <- function(..., isEventList = FALSE) {
 
   y <- list(...)
+  if(is.list(y) && length(y) == 1 && isEventList) {
+    y <- unlist(y, recursive = FALSE)
+  }
+
   if(!all(nzchar(names(y)))) {
     stop("all supplied entries must have names", domain = "R-impimp")
   }

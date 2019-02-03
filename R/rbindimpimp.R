@@ -70,6 +70,10 @@ rbindimpimp <- function(x, y){
   namesX <- names(x)
   namesY <- names(y)
 
+  # names of imputed variables
+  impvars <- unique(c(attr(x, "imputedvarnames"),
+                      attr(y, "imputedvarnames")))
+
   # burst the combined variable names -> original variable names
   namesSplitX <- strsplit(namesX, varsep, fixed = TRUE)
   namesSplitY <- strsplit(namesY, varsep, fixed = TRUE)
@@ -144,14 +148,32 @@ rbindimpimp <- function(x, y){
           collapse_obs(apply(tupelData, MARGIN = 1, collapse_values))
         })
       })
-    # converting the result to a data.frame
-    as.data.frame.list(finalRes, col.names = newColNames,
-                       optional = TRUE, stringsAsFactors = FALSE)
+    # returning the interesting result as a data.frame
+    # and the vector of copied variable names
+    list(data = as.data.frame.list(finalRes,
+                                   col.names = newColNames,
+                                   optional = TRUE,
+                                   stringsAsFactors = FALSE),
+         copiednames = tocopynames)
   }
 
-  # generate the subdata and combine
-  impXY <- rbind(dataFromGroups(impData = x, vargroups = resX),
-                    dataFromGroups(impData = y, vargroups = resY))
+  # generate the subdata
+  impX <- dataFromGroups(impData = x, vargroups = resX)
+  impY <- dataFromGroups(impData = y, vargroups = resY)
+
+  # which variables were copied
+  copied_vars <- unique(c(impX$copiednames, impY$copiednames))
+  # which variables are copied and amongst the imputed variables
+  impvars_single <- intersect(copied_vars, impvars)
+
+  # transform variables which contain imputed values into character
+  impX$data[, impvars_single] <-
+    sapply(impX$data[, impvars_single], as.character)
+  impY$data[, impvars_single] <-
+    sapply(impY$data[, impvars_single], as.character)
+
+  # combine the two data sets
+  impXY <- rbind(impX$data, impY$data, stringsAsFactors = FALSE)
 
   # adjust the class of the result
   class(impXY) <- c("impimp", class(impXY))
@@ -167,6 +189,8 @@ rbindimpimp <- function(x, y){
   attr(impXY, "varlevels") <-
     stats::setNames(mapply(FUN = union, vlX[vnXY], vlY[vnXY],
                     USE.NAMES = FALSE), vnXY)
+  attr(impXY, "imputedvarnames") <-
+    setdiff(newColNames, setdiff(copied_vars, impvars))
 
   # return the generate impimp object
   impXY

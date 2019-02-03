@@ -46,7 +46,9 @@ and then storing their levels.}
 The data.frame resulting in an imprecise imputation
 of \code{donor} into \code{recipient}.
 It is also of class \code{"impimp"} and stores the imputation
-method in its attribute \code{"impmethod"}, as well as the
+method in its attribute \code{"impmethod"}, the names of the
+variables of the resulting object containing imputed values
+in the attribute \code{"imputedvarnames"}, as well as the
 list of (guessed) levels of each underlying variable in
 \code{"varlevels"}.
 }

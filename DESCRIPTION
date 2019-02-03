@@ -1,8 +1,8 @@
 Package: impimp
 Type: Package
 Title: Imprecise Imputation for Statistical Matching
-Version: 0.3.0
-Date: 2018-11-23
+Version: 0.3.1
+Date: 2019-02-03
 Authors@R: c(person("Paul", "Fink",
                     email = "paul.fink@stat.uni-muenchen.de",
                     role = c("aut", "cre")),
@@ -28,10 +28,10 @@ Encoding: UTF-8
 Imports: stats
 RoxygenNote: 6.1.1
 NeedsCompilation: no
-Packaged: 2018-11-23 08:23:30 UTC; finkpa
+Packaged: 2019-02-03 18:23:13 UTC; paulus
 Author: Paul Fink [aut, cre],
   Eva Endres [aut],
   Melissa Schmoll [ctb]
 Maintainer: Paul Fink <paul.fink@stat.uni-muenchen.de>
 Repository: CRAN
-Date/Publication: 2018-11-23 11:20:10 UTC
+Date/Publication: 2019-02-03 18:43:16 UTC

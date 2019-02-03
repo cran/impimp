@@ -5,7 +5,7 @@
 \alias{is.impimp_event}
 \title{Imprecise Events}
 \usage{
-impimp_event(...)
+impimp_event(..., isEventList = FALSE)
 
 is.impimp_event(x)
 }
@@ -14,6 +14,11 @@ is.impimp_event(x)
 For each component the varname should be a variable name from the
 underlying data.frame and value a vector of possible outcomes;
 may also be of length one.}
+
+\item{isEventList}{logical; if \code{TRUE} and \code{...}
+contains only a list object, this list is treated as if it was
+an event specification, see \code{...}. Since this argument
+follows \code{...} its name cannot be abbreviated.}
 
 \item{x}{object to test for class \code{"impimp_event"}}
 }
@@ -34,12 +39,16 @@ resulting impimp_event object is later used for.
 \examples{
 ## underlying data set: x1: 1:6, x2: 1:10
 
-## subspace, requiring: x1 == 1 & ((z2 == 1 ) | (z2 == 2))
-impimp_event(x1 = 1, z2 = c(1,2))
+## subspace, requiring: x1 == 1 & ((x2 == 1 ) | (x2 == 2))
+impimp_event(x1 = 1, x2 = c(1,2))
 
 ## subsapce containing all points whitin the Cartesian
-## product of (x1 =) {1,2,3,6} x {5,8} (= z2)
-impimp_event(x1 = c(1:3,6), z2 = c(5,8))
+## product of (x1 =) {1,2,3,6} x {5,8} (= x2)
+# via  ... argument
+impimp_event(x1 = c(1:3,6), x2 = c(5,8))
+# via EVENTLIST
+impimp_event(list(x1 = c(1:3,6), x2 = c(5,8)),
+             isEventList = TRUE)
 
 }
 \seealso{
